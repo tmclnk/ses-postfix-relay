@@ -1,0 +1,33 @@
+definitions:
+  docker-snapshot: &docker-snapshot
+    name: Build Docker Snapshot
+    image: atlassian/default-image:2
+    caches:
+      - docker
+    services:
+      - docker
+    script:
+      - docker build -t $BITBUCKET_REPO_SLUG --build-arg AWS_REGION_OVERRIDE=us-east-1 .
+      - pipe: atlassian/aws-ecr-push-image:1.2.2
+        variables:
+          IMAGE_NAME: $BITBUCKET_REPO_SLUG
+          TAGS: ${BITBUCKET_BUILD_NUMBER} ${BITBUCKET_COMMIT} ${BITBUCKET_BRANCH} SNAPSHOT-${BITBUCKET_BUILD_NUMBER}
+  docker-release: &docker-release
+    name: Build Docker Release
+    image: atlassian/default-image:2
+    caches:
+      - docker
+    services:
+      - docker
+    script:
+      - docker build -t $BITBUCKET_REPO_SLUG --build-arg AWS_REGION_OVERRIDE=us-east-1 .
+      - pipe: atlassian/aws-ecr-push-image:1.2.2
+        variables:
+          IMAGE_NAME: $BITBUCKET_REPO_SLUG
+          TAGS: ${BITBUCKET_BUILD_NUMBER} ${BITBUCKET_COMMIT} ${BITBUCKET_BRANCH}
+pipelines:
+  default:
+    - step: *docker-snapshot
+  branches:
+    master:
+    - step: *docker-release

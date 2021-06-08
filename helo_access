@@ -1,0 +1,20 @@
+################################################################################
+# helo_access
+################################################################################
+# This file controls access to the relay. Example whitelist entries are listed
+# below. You should remove the examples and add your own. You will need a
+# a minimum of one entry here, however.
+
+# If your apps are being hosted via docker-compose or ECS bridge-mode
+# networking, you'll need to take note of the originating hostnames within the
+# docker network.
+myapp PERMIT
+myapp.local PERMIT
+
+# If you're using within a K8S pod or with ECS host-mode networking
+# then you'll have a shared network namespace and any apps within the pod/task
+# will originate from "localhost"
+localhost PERMIT
+
+# EC2 Hostname Pattern
+/^ip-[0-9]+-[0-9]+-[0-9]+-[0-9]+\.ec2\.internal$/ PERMIT

@@ -1,4 +1,5 @@
 # SES Postfix Relay
+
 A rather bloated Docker image containing a Postfix installation which
 will forward SMTP requests to Amazon [SES](https://aws.amazon.com/ses/).
 This allows you to use plain SMTP wired to SES over port 25.
@@ -11,6 +12,7 @@ Requires two params to be specified in SES.
 For information about credentials, see [Obtaining your Amazon SES SMTP Credentials](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-credentials.html).
 
 ## Environment Variables 
+
 |ENV Var|Value|
 |-|-|
 |SES_USERNAME_PARAM| Key in SSM of username parameter in ses, defaults to `/ses-relay/smtpusername` |
@@ -26,19 +28,23 @@ involve specifying environment variables `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS
 AWS Instance Roles, etc.
 
 ## helo_access
+
 In addition to `MYNETWORKS`, you will need to specify the hosts from 
 which you accept `HELO` messages in [helo_access](./helo_access). You can use POSIX Regular Expressions (PCRE) here if you wish.
 
 See [access(5)](http://www.postfix.org/access.5.html) and [regex_table(5)](http://www.postfix.org/regexp_table.5.html) for details on the HOST NAME patterns allowed here.
 
 ## Running
+
 ```sh
 # run using aws credentials in ~/.aws
 docker run -v ~/.aws:/root/.aws --rm -p 25:25 tmclnk/ses-postfix-relay
 ```
 
 ## Testing
+
 You can attach to the container and send a test message. The final line must contain a period with no other content.
+
 ```sh
 sendmail -f noreply@mydomain.com recipient@example.com
 From: MyDomain Notification
@@ -48,10 +54,12 @@ This message was sent using Amazon SES.
 ```
 
 ## Troubleshooting
+
 ```
- Feb 17 17:56:02 ip-10-150-241-58 postfix/smtpd[978]: NOQUEUE: reject: RCPT from localhost[127.0.0.1]: 451 4.3.0 <ip-10-150-241-58.ec2.internal>: Temporary lookup failure; from=<from@example.com> to=<to@example.com> proto=ESMTP helo=<ip-10-150-241-58.ec2.internal>
- ```
- Some things to check:
+Feb 17 17:56:02 ip-10-150-241-58 postfix/smtpd[978]: NOQUEUE: reject: RCPT from localhost[127.0.0.1]: 451 4.3.0 <ip-10-150-241-58.ec2.internal>: Temporary lookup failure; from=<from@example.com> to=<to@example.com> proto=ESMTP helo=<ip-10-150-241-58.ec2.internal>
+```
+
+Some things to check:
 
 * is the `RCPT from` address in `MYNETWORKS`
 * is the `from=` address permissible in your SES relay
@@ -59,5 +67,6 @@ This message was sent using Amazon SES.
 * does the hostname in `helo=` match an entry in [helo_access](./helo_access)
 
 ## Related Links
+
 * https://docs.aws.amazon.com/ses/latest/DeveloperGuide/postfix.html
 * https://docs.aws.amazon.com/ses/latest/DeveloperGuide/smtp-credentials.html

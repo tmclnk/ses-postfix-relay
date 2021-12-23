@@ -28,23 +28,21 @@ ARG MYNETWORKS="127.0.0.0/8 172.0.0.0/8 192.0.0.0/8"
 ENV MYNETWORKS=${MYNETWORKS}
 
 # libsasl2-modules: to connect to SES
-# rsyslog: because postfix wants to write to a syslog
 # curl and unzip: to unzip the cli package
+# tini: container init
 RUN apt-get update && \
 DEBIAN_FRONTEND=noninteractive apt-get -yq install \
-postfix libsasl2-modules rsyslog \
-curl unzip
-
-ADD ./helo_access /root/helo_access
-
-# Disable kernel logging support in rsyslog
-RUN sed -i '/module(load="imklog")/d' /etc/rsyslog.conf
+postfix libsasl2-modules \
+curl unzip \
+tini && \
+rm -rf /var/lib/apt/lists/*
 
 # We need aws-cli to look up credentials
 RUN curl https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip -o /root/awscliv2.zip && cd /root && unzip awscliv2.zip && ./aws/install && rm /root/awscliv2.zip
 
+ADD ./helo_access /root/helo_access
 ADD ./startup.sh /usr/local/bin/startup.sh
 
-ENTRYPOINT exec startup.sh
+ENTRYPOINT ["tini", "--", "/usr/local/bin/startup.sh"]
 
 EXPOSE 25

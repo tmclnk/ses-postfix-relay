@@ -67,14 +67,9 @@ postconf -e 'smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt' \
 "smtpd_helo_required = yes" \
 "smtpd_helo_restrictions = permit_mynetworks, check_helo_access hash:/etc/postfix/helo_access, permit" 
 
-################################################################################
-# Start As Services
-################################################################################
-# Postfix can be started without writing to syslog, but I haven't figured out
-# how to make that actually work, so here we are.
-service rsyslog start
-service postfix start
+postconf -e "maillog_file = /dev/stdout" 
 
-# tail-f doesn't work with overlayfs, so use disable-inotify.
-# Yes, 3 dashes. 
-exec tail ---disable-inotify -f /var/log/syslog
+# postfix chroot needs resolv.conf for DNS lookups
+cat /etc/resolv.conf > /var/spool/postfix/etc/resolv.conf
+
+exec postfix start-fg
